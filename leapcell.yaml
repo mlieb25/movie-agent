@@ -1,0 +1,9 @@
+build:
+  buildCommand: pip install -r requirements.txt
+
+run:
+  runCommand: uvicorn main:app --host 0.0.0.0 --port 8080
+
+envs:
+  - name: OPENAI_API_KEY
+    # Set this secret in the Leapcell dashboard — never commit the actual key
