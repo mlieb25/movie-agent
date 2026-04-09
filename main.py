@@ -15,7 +15,7 @@ from llm import TOP_MOVIES, get_recommendation
 
 app = FastAPI(title="Movie Recommender")
 
-TIMEOUT_SECONDS = 5
+TIMEOUT_SECONDS = 20
 VALID_IDS = set(TOP_MOVIES["tmdb_id"].astype(int))
 
 
