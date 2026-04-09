@@ -1,45 +1,28 @@
-import csv
 import json
 import os
 
+import pandas as pd
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
-# Data loading – runs once at startup
+# DO NOT EDIT: Data loading
 # ---------------------------------------------------------------------------
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "tmdb_top1000_movies.csv")
 TOP_N = 40
 
-
-def load_top_movies(path: str, n: int) -> list[dict]:
-    """Return the top-n movies by vote_count as a list of dicts."""
-    movies = []
-    with open(path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            try:
-                row["vote_count"] = int(row["vote_count"])
-            except (ValueError, KeyError):
-                row["vote_count"] = 0
-            movies.append(row)
-    movies.sort(key=lambda r: r["vote_count"], reverse=True)
-    return movies[:n]
-
-
-TOP_MOVIES = load_top_movies(DATA_PATH, TOP_N)
+df = pd.read_csv(DATA_PATH)
+TOP_MOVIES = df.nlargest(TOP_N, "vote_count")
 
 # ---------------------------------------------------------------------------
-# FastAPI app
+# DO NOT EDIT: FastAPI app and request/response schemas
+#
+# These define the API contract. Changing them will break the grader.
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="Movie Recommender")
-
-# ---------------------------------------------------------------------------
-# Request / response schemas
-# ---------------------------------------------------------------------------
 
 
 class WatchHistoryItem(BaseModel):
@@ -60,26 +43,20 @@ class RecommendResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# LLM helper
+# TODO: Edit these to improve your recommendations
+#
+# build_prompt()  – controls what the LLM sees; this is the main thing to tune
+# call_llm()      – controls how the LLM is called; you can adjust temperature,
+#                   swap models, make multiple calls, etc.
 # ---------------------------------------------------------------------------
 
 MODEL = "gpt-5-nano"
 
 
-def call_llm(prompt: str) -> dict:
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"},
-    )
-    return json.loads(response.choices[0].message.content)
-
-
 def build_prompt(request: RecommendRequest) -> str:
     movie_list = "\n".join(
-        f'- tmdb_id={m["tmdb_id"]} | "{m["title"]}" ({m["year"]}) | genres: {m["genres"]} | overview: {m["overview"][:200]}'
-        for m in TOP_MOVIES
+        f'- tmdb_id={row.tmdb_id} | "{row.title}" ({row.year}) | genres: {row.genres} | overview: {row.overview[:200]}'
+        for row in TOP_MOVIES.itertuples()
     )
     history_text = (
         ", ".join(f'"{h.name}"' for h in request.history)
@@ -105,8 +82,21 @@ Respond with ONLY a JSON object — no markdown, no extra text — in this exact
 }}"""
 
 
+def call_llm(prompt: str) -> dict:
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+    )
+    return json.loads(response.choices[0].message.content)
+
+
 # ---------------------------------------------------------------------------
-# Endpoint
+# DO NOT EDIT: Endpoint
+#
+# Handles validation and enforces the output contract (valid tmdb_id,
+# description ≤500 chars). Edit build_prompt / call_llm above instead.
 # ---------------------------------------------------------------------------
 
 
@@ -120,8 +110,7 @@ def recommend(request: RecommendRequest):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM call failed: {e}")
 
-    # Validate tmdb_id is in our candidate list
-    valid_ids = {int(m["tmdb_id"]) for m in TOP_MOVIES}
+    valid_ids = set(TOP_MOVIES["tmdb_id"].astype(int))
     tmdb_id = int(result.get("tmdb_id", -1))
     if tmdb_id not in valid_ids:
         raise HTTPException(
