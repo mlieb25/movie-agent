@@ -78,6 +78,8 @@ Setting `response_format` to `{"type": "json_object"}` is called **JSON mode** â
 
 ## Running locally
 
+You can run your API on your own laptop to start, for testing purposes.
+
 **1. Install dependencies**
 
 ```bash
@@ -87,6 +89,11 @@ pip install -r requirements.txt
 ```
 
 **2. Set your API key**
+You will need to obtain an API key from [here](https://platform.openai.com/api-keys). You will likely need to set up billing. 
+
+Very conservatively, you should be able to generate about 1,000 recommendations for $0.40 USD, and you may be able to obtain complimentary usage by [sharing data ](https://help.openai.com/en/articles/10306912-sharing-feedback-evaluation-and-fine-tuning-data-and-api-inputs-and-outputs-with-openai) with OpenAI. 
+
+You need to bring this API key into your terminal environment, by running the command:
 
 ```bash
 export OPENAI_API_KEY=your_openai_api_key_here
@@ -98,7 +105,19 @@ export OPENAI_API_KEY=your_openai_api_key_here
 uvicorn main:app --reload
 ```
 
+You should see it output:
+
+``` 
+INFO:     Will watch for changes in these directories: ['/path/to/your/app']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+```
+
+Note the port -- 8000 by default, althought it may be something else if 8000 is occupied.
+The server will automatically reload to reflect your changes if you edit the files in that directory.
+
 **4. Send a test request**
+
+You can now make requests to your agent by `curl`-ing it, for example:
 
 ```bash
 curl -X POST http://localhost:8000/recommend \
@@ -110,13 +129,20 @@ curl -X POST http://localhost:8000/recommend \
   }'
 ```
 
-You can also open `http://localhost:8000/docs` in a browser for an interactive API explorer (provided automatically by FastAPI).
+Note that the port (8000 here) must be the same one that your app is listening on.
 
 ---
 
 ## Deploying to Leapcell
 
-[Leapcell](https://leapcell.io/) can host a FastAPI app directly from a GitHub repo.
+[Leapcell](https://leapcell.io/) is a provider that will host your API so that anyone can send requests to it. There are many services like this, but Leapcell is easy to use and has a very generous free tier.
+
+To play the game in class, you will need to have deployed your app publicly so that other students can access it.
+
+You will need a free leapcell account, and you will need to [connect it to your Github account](https://docs.leapcell.io/service/connect-to-github/).
+
+To deploy your app to Leapcell, follow the steps:
+
 
 **1. Push your code to GitHub.**
 
