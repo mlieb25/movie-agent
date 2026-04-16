@@ -1,6 +1,6 @@
 # Movie Recommender – Starter
 
-A minimal API that recommends a movie based on a user's stated preferences. It picks from the 40 most-voted movies in the TMDB dataset and uses an LLM to choose the best match and write a short pitch.
+A minimal API that recommends a movie based on a user's stated preferences. It picks from the 5 most-voted movies in the TMDB dataset and uses an LLM to choose the best match and write a short pitch.
 
 ---
 
@@ -97,7 +97,7 @@ Leapcell will install dependencies, start the server, and give you a public URL.
 
 Some ideas to get you started:
 
-- Expand the candidate pool beyond the top 40 (e.g. filter by genre first, then rank).
+- Expand the candidate pool beyond the top 5 (e.g. filter by genre first, then rank).
 - Include genre, keywords, or cast in the prompt to give the LLM more signal.
 - Use the watch history to steer away from movies too similar to ones already seen.
 - Experiment with prompt phrasing — chain-of-thought or few-shot examples often improve output quality.
