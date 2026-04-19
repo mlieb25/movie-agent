@@ -468,7 +468,7 @@ if __name__ == "__main__":
         else []
     )
 
-    print("\nThinking...\n")
+    #print("\nThinking...\n")
     start = time.perf_counter()
 
     if args.debug:
@@ -482,8 +482,12 @@ if __name__ == "__main__":
         print()
 
     result = get_recommendation(preferences, history)
-    print(f"\n✅ Recommendation:")
-    print(f"   tmdb_id    : {result.get('tmdb_id')}")
-    print(f"   description: {result.get('description')}")
     elapsed = time.perf_counter() - start
-    print(f"\n⏱  Served in {elapsed:.2f}s")
+    
+    if args.debug:
+        print(f"\n✅ Recommendation:")
+        print(f"   tmdb_id    : {result.get('tmdb_id')}")
+        print(f"   description: {result.get('description')}")
+        print(f"\n⏱  Served in {elapsed:.2f}s")
+    else:
+        print(result)
